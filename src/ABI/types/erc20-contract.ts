@@ -69,6 +69,16 @@ export type Erc20ContractMethodNames =
   | 'symbol'
   | 'transfer'
   | 'allowance';
+export interface ApprovalEventEmittedResponse {
+  owner: string;
+  spender: string;
+  value: BigNumberish;
+}
+export interface TransferEventEmittedResponse {
+  from: string;
+  to: string;
+  value: BigNumberish;
+}
 export interface Erc20Contract {
   /**
    * Payable: false
