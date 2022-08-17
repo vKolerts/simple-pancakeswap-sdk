@@ -7,9 +7,12 @@ import { PancakeswapPairContext } from './models/pancakeswap-pair-contexts';
 import { PancakeswapPairFactoryContext } from './models/pancakeswap-pair-factory-context';
 import { PancakeswapPairSettings } from './models/pancakeswap-pair-settings';
 import { PancakeswapPairFactory } from './pancakeswap-pair.factory';
+import { ContractContext } from '../../common/contract-context';
+import { PancakeswapRouterContractFactory } from '../router/pancakeswap-router-contract.factory';
 
 export class PancakeswapPair {
   private _ethersProvider: EthersProvider;
+  private _contractContext = ContractContext;
 
   constructor(private _pancakeswapPairContext: PancakeswapPairContext) {
     if (!this._pancakeswapPairContext.fromTokenContractAddress) {
@@ -64,6 +67,26 @@ export class PancakeswapPair {
     this._ethersProvider = new EthersProvider();
   }
 
+  public async setRouter(routerAddress: string) {
+    if (!isAddress(routerAddress)) {
+      throw new PancakeswapError(
+        '`routerAddress` is not a valid address',
+        ErrorCodes.routerAddressNotValid
+      );
+    }
+
+    this._contractContext.routerAddress = routerAddress;
+
+    const routerContract = new PancakeswapRouterContractFactory(
+      this._ethersProvider,
+      this._contractContext,
+    );
+    const factoryAddress = await routerContract.factory();
+
+    this._contractContext.factoryAddress = factoryAddress;
+    this._contractContext.pairAddress = factoryAddress;
+  }
+
   /**
    * Create factory to be able to call methods on the 2 tokens
    */
@@ -89,6 +112,7 @@ export class PancakeswapPair {
       settings:
         this._pancakeswapPairContext.settings || new PancakeswapPairSettings(),
       ethersProvider: this._ethersProvider,
+      contractContext: this._contractContext,
     };
 
     return new PancakeswapPairFactory(pancakeswapFactoryContext);

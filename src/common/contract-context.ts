@@ -1,5 +1,15 @@
 import { JsonFragment } from '@ethersproject/abi';
 
+export interface ContractContext {
+  routerAddress: string;
+  factoryAddress: string;
+  pairAddress: string;
+  routerAbi: JsonFragment[];
+  factoryAbi: JsonFragment[];
+  pairAbi: JsonFragment[];
+  erc20Abi: JsonFragment[];
+}
+
 export class ContractContext {
   /**
    * The pancakeswap router address

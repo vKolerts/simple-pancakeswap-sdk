@@ -41,7 +41,8 @@ export class PancakeswapPairFactory {
     this._pancakeswapPairFactoryContext.fromToken,
     this._pancakeswapPairFactoryContext.toToken,
     this._pancakeswapPairFactoryContext.settings.disableMultihops,
-    this._pancakeswapPairFactoryContext.ethersProvider
+    this._pancakeswapPairFactoryContext.ethersProvider,
+    this._pancakeswapPairFactoryContext.contractContext || ContractContext,
   );
 
   private _quoteChangeTimeout: NodeJS.Timeout | undefined;

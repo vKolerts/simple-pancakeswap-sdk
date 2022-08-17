@@ -37,7 +37,8 @@ export class PancakeswapRouterFactory {
     private _fromToken: Token,
     private _toToken: Token,
     private _disableMultihops: boolean,
-    private _ethersProvider: EthersProvider
+    private _ethersProvider: EthersProvider,
+    private _contractContext: ContractContext
   ) {}
 
   /**
@@ -47,6 +48,7 @@ export class PancakeswapRouterFactory {
   public async getAllPossibleRoutes(): Promise<Token[][]> {
     let findPairs: Token[][][] = [];
 
+    findPairs = [[[this._fromToken, this._toToken]]];
     if (!this._disableMultihops) {
       findPairs = [
         this.mainCurrenciesPairsForFromToken,
@@ -59,15 +61,12 @@ export class PancakeswapRouterFactory {
         this.mainCurrenciesPairsForBUSD,
         [[this._fromToken, this._toToken]],
       ];
-    } else {
-      // multihops turned off so only go direct
-      findPairs = [[[this._fromToken, this._toToken]]];
     }
 
     const contractCallContext: ContractCallContext = {
       reference: 'pancakeswap-pairs',
-      contractAddress: ContractContext.pairAddress,
-      abi: ContractContext.pairAbi,
+      contractAddress: this._contractContext.pairAddress,
+      abi: this._contractContext.pairAbi,
       calls: [],
     };
 
@@ -158,8 +157,8 @@ export class PancakeswapRouterFactory {
     const routes = await this.getAllPossibleRoutes();
     const contractCallContext: ContractCallContext<Token[][]> = {
       reference: 'pancakeswap-route-quotes',
-      contractAddress: ContractContext.routerAddress,
-      abi: ContractContext.routerAbi,
+      contractAddress: this._contractContext.routerAddress,
+      abi: this._contractContext.routerAbi,
       calls: [],
       context: routes,
     };
@@ -532,123 +531,277 @@ export class PancakeswapRouterFactory {
   }
 
   private get allMainTokens(): Token[] {
-    if (this._ethersProvider.provider.network.chainId === ChainId.BSC) {
-      return [
-        this.USDTTokenForConnectedNetwork,
-        this.COMPTokenForConnectedNetwork,
-        this.USDCTokenForConnectedNetwork,
-        this.DAITokenForConnectedNetwork,
-        this.WBNBTokenForConnectedNetwork,
-        this.BUSDTokenForConnectedNetwork,
-      ];
+    const tokens: Token[] = [];
+
+    if (this.USDTTokenForConnectedNetwork) {
+      tokens.push(this.USDTTokenForConnectedNetwork);
     }
 
-    return [this.WBNBTokenForConnectedNetwork];
+    if (this.COMPTokenForConnectedNetwork) {
+      tokens.push(this.COMPTokenForConnectedNetwork);
+    }
+
+    if (this.USDCTokenForConnectedNetwork) {
+      tokens.push(this.USDCTokenForConnectedNetwork);
+    }
+
+    if (this.DAITokenForConnectedNetwork) {
+      tokens.push(this.DAITokenForConnectedNetwork);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      tokens.push(this.WBNBTokenForConnectedNetwork);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      tokens.push(this.BUSDTokenForConnectedNetwork);
+    }
+
+    return tokens;
   }
 
   private get mainCurrenciesPairsForFromToken(): Token[][] {
-    const pairs = [
-      [this._fromToken, this.USDTTokenForConnectedNetwork],
-      [this._fromToken, this.COMPTokenForConnectedNetwork],
-      [this._fromToken, this.USDCTokenForConnectedNetwork],
-      [this._fromToken, this.DAITokenForConnectedNetwork],
-      [this._fromToken, this.WBNBTokenForConnectedNetwork],
-      [this._fromToken, this.BUSDTokenForConnectedNetwork],
-    ];
+    const pairs: Token[][] = [];
+
+    if (this.USDTTokenForConnectedNetwork) {
+      pairs.push([this._fromToken, this.USDTTokenForConnectedNetwork]);
+    }
+
+    if (this.COMPTokenForConnectedNetwork) {
+      pairs.push([this._fromToken, this.COMPTokenForConnectedNetwork]);
+    }
+
+    if (this.USDCTokenForConnectedNetwork) {
+      pairs.push([this._fromToken, this.USDCTokenForConnectedNetwork]);
+    }
+
+    if (this.DAITokenForConnectedNetwork) {
+      pairs.push([this._fromToken, this.DAITokenForConnectedNetwork]);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      pairs.push([this._fromToken, this.WBNBTokenForConnectedNetwork]);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      pairs.push([this._fromToken, this.BUSDTokenForConnectedNetwork]);
+    }
 
     return pairs.filter((t) => t[0].contractAddress !== t[1].contractAddress);
   }
 
   private get mainCurrenciesPairsForToToken(): Token[][] {
-    const pairs: Token[][] = [
-      [this.USDTTokenForConnectedNetwork, this._toToken],
-      [this.COMPTokenForConnectedNetwork, this._toToken],
-      [this.USDCTokenForConnectedNetwork, this._toToken],
-      [this.DAITokenForConnectedNetwork, this._toToken],
-      [this.WBNBTokenForConnectedNetwork, this._toToken],
-      [this.BUSDTokenForConnectedNetwork, this._toToken],
-    ];
+    const pairs: Token[][] = [];
+
+    if (this.USDTTokenForConnectedNetwork) {
+      pairs.push([this.USDTTokenForConnectedNetwork, this._toToken]);
+    }
+
+    if (this.COMPTokenForConnectedNetwork) {
+      pairs.push([this.COMPTokenForConnectedNetwork, this._toToken]);
+    }
+
+    if (this.USDCTokenForConnectedNetwork) {
+      pairs.push([this.USDCTokenForConnectedNetwork, this._toToken]);
+    }
+
+    if (this.DAITokenForConnectedNetwork) {
+      pairs.push([this.DAITokenForConnectedNetwork, this._toToken]);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      pairs.push([this.WBNBTokenForConnectedNetwork, this._toToken]);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      pairs.push([this.BUSDTokenForConnectedNetwork, this._toToken]);
+    }
 
     return pairs.filter((t) => t[0].contractAddress !== t[1].contractAddress);
   }
 
   private get mainCurrenciesPairsForUSDT(): Token[][] {
-    return [
-      [this.USDTTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork],
-      // [this.USDTTokenForConnectedNetwork, this.DAITokenForConnectedNetwork],
-      [this.USDTTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork],
-      [this.USDTTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork],
-      [this.USDTTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork],
-    ];
+    const pairs: Token[][] = [];
+    if (!this.USDTTokenForConnectedNetwork) {
+      return pairs;
+    }
+
+    if (this.COMPTokenForConnectedNetwork) {
+      pairs.push([this.USDTTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork]);
+    }
+
+    if (this.USDCTokenForConnectedNetwork) {
+      pairs.push([this.USDTTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork]);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      pairs.push([this.USDTTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork]);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      pairs.push([this.USDTTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork]);
+    }
+
+    return pairs;
   }
 
   private get mainCurrenciesPairsForCOMP(): Token[][] {
-    return [
-      [this.COMPTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork],
-      [this.COMPTokenForConnectedNetwork, this.DAITokenForConnectedNetwork],
-      [this.COMPTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork],
-      [this.COMPTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork],
-      [this.COMPTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork],
-    ];
+    const pairs: Token[][] = [];
+    if (!this.COMPTokenForConnectedNetwork) {
+      return pairs;
+    }
+
+    if (this.USDTTokenForConnectedNetwork) {
+      pairs.push([this.COMPTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork]);
+    }
+
+    if (this.DAITokenForConnectedNetwork) {
+      pairs.push([this.COMPTokenForConnectedNetwork, this.DAITokenForConnectedNetwork]);
+    }
+
+    if (this.USDCTokenForConnectedNetwork) {
+      pairs.push([this.COMPTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork]);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      pairs.push([this.COMPTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork]);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      pairs.push([this.COMPTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork]);
+    }
+
+    return pairs;
   }
 
   private get mainCurrenciesPairsForDAI(): Token[][] {
-    return [
-      [this.DAITokenForConnectedNetwork, this.COMPTokenForConnectedNetwork],
-      [this.DAITokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork],
-      [this.DAITokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork],
-    ];
+    const pairs: Token[][] = [];
+    if (!this.DAITokenForConnectedNetwork) {
+      return pairs;
+    }
+
+    if (this.COMPTokenForConnectedNetwork) {
+      pairs.push([this.DAITokenForConnectedNetwork, this.COMPTokenForConnectedNetwork]);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      pairs.push([this.DAITokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork]);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      pairs.push([this.DAITokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork]);
+    }
+
+    return pairs;
   }
 
   private get mainCurrenciesPairsForUSDC(): Token[][] {
-    return [
-      [this.USDCTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork],
-      [this.USDCTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork],
-      [this.USDCTokenForConnectedNetwork, this.DAITokenForConnectedNetwork],
-      [this.USDCTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork],
-      [this.USDCTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork],
-    ];
+    const pairs: Token[][] = [];
+    if (!this.USDCTokenForConnectedNetwork) {
+      return pairs;
+    }
+
+    if (this.USDTTokenForConnectedNetwork) {
+      pairs.push([this.USDCTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork]);
+    }
+
+    if (this.COMPTokenForConnectedNetwork) {
+      pairs.push([this.USDCTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork]);
+    }
+
+    if (this.DAITokenForConnectedNetwork) {
+      pairs.push([this.USDCTokenForConnectedNetwork, this.DAITokenForConnectedNetwork]);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      pairs.push([this.USDCTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork]);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      pairs.push([this.USDCTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork]);
+    }
+
+    return pairs;
   }
 
   private get mainCurrenciesPairsForWBNB(): Token[][] {
-    return [
-      [this.WBNBTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork],
-      [this.WBNBTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork],
-      [this.WBNBTokenForConnectedNetwork, this.DAITokenForConnectedNetwork],
-      [this.WBNBTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork],
-      [this.WBNBTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork],
-    ];
+    const pairs: Token[][] = [];
+    if (!this.WBNBTokenForConnectedNetwork) {
+      return pairs;
+    }
+
+    if (this.USDTTokenForConnectedNetwork) {
+      pairs.push([this.WBNBTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork]);
+    }
+
+    if (this.COMPTokenForConnectedNetwork) {
+      pairs.push([this.WBNBTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork]);
+    }
+
+    if (this.DAITokenForConnectedNetwork) {
+      pairs.push([this.WBNBTokenForConnectedNetwork, this.DAITokenForConnectedNetwork]);
+    }
+
+    if (this.USDCTokenForConnectedNetwork) {
+      pairs.push([this.WBNBTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork]);
+    }
+
+    if (this.BUSDTokenForConnectedNetwork) {
+      pairs.push([this.WBNBTokenForConnectedNetwork, this.BUSDTokenForConnectedNetwork]);
+    }
+
+    return pairs;
   }
+
   private get mainCurrenciesPairsForBUSD(): Token[][] {
-    return [
-      [this.BUSDTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork],
-      [this.BUSDTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork],
-      [this.BUSDTokenForConnectedNetwork, this.DAITokenForConnectedNetwork],
-      [this.BUSDTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork],
-      [this.BUSDTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork],
-    ];
+    const pairs: Token[][] = [];
+    if (!this.BUSDTokenForConnectedNetwork) {
+      return pairs;
+    }
+
+    if (this.USDTTokenForConnectedNetwork) {
+      pairs.push([this.BUSDTokenForConnectedNetwork, this.USDTTokenForConnectedNetwork]);
+    }
+
+    if (this.COMPTokenForConnectedNetwork) {
+      pairs.push([this.BUSDTokenForConnectedNetwork, this.COMPTokenForConnectedNetwork]);
+    }
+
+    if (this.DAITokenForConnectedNetwork) {
+      pairs.push([this.BUSDTokenForConnectedNetwork, this.DAITokenForConnectedNetwork]);
+    }
+
+    if (this.USDCTokenForConnectedNetwork) {
+      pairs.push([this.BUSDTokenForConnectedNetwork, this.USDCTokenForConnectedNetwork]);
+    }
+
+    if (this.WBNBTokenForConnectedNetwork) {
+      pairs.push([this.BUSDTokenForConnectedNetwork, this.WBNBTokenForConnectedNetwork]);
+    }
+
+    return pairs;
   }
 
   private get USDTTokenForConnectedNetwork() {
-    return USDT.token();
+    return USDT.token(this._ethersProvider.provider.network.chainId);
   }
 
   private get COMPTokenForConnectedNetwork() {
-    return COMP.token();
+    return COMP.token(this._ethersProvider.provider.network.chainId);
   }
 
   private get DAITokenForConnectedNetwork() {
-    return DAI.token();
+    return DAI.token(this._ethersProvider.provider.network.chainId);
   }
 
   private get USDCTokenForConnectedNetwork() {
-    return USDC.token();
+    return USDC.token(this._ethersProvider.provider.network.chainId);
   }
 
   private get WBNBTokenForConnectedNetwork() {
-    return BNB.token();
+    return BNB.token(this._ethersProvider.provider.network.chainId);
   }
   private get BUSDTokenForConnectedNetwork() {
-    return BUSD.token();
+    return BUSD.token(this._ethersProvider.provider.network.chainId);
   }
 }

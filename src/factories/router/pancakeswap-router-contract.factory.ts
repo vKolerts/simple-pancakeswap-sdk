@@ -5,11 +5,14 @@ import { EthersProvider } from '../../ethers-provider';
 
 export class PancakeswapRouterContractFactory {
   private _pancakeswapRouterContract = this._ethersProvider.getContract<RouterContractContext>(
-    JSON.stringify(ContractContext.routerAbi),
-    ContractContext.routerAddress
+    JSON.stringify(this._contractContext.routerAbi),
+    this._contractContext.routerAddress
   );
 
-  constructor(private _ethersProvider: EthersProvider) {}
+  constructor(
+    private _ethersProvider: EthersProvider,
+    private _contractContext: ContractContext = ContractContext
+  ) { }
 
   public addLiquidity(
     tokenA: string,

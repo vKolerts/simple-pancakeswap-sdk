@@ -11,4 +11,6 @@ export enum ErrorCodes {
   ethereumAddressRequired = 10,
   ethereumAddressNotValid = 11,
   invalidFromOrToContractToken = 13,
+  routerAddressNotValid = 14,
+  factoryAddressNotValid = 15,
 }
